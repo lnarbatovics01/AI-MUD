@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Castle Perilous MUD</title>
+    <style>
+        body { 
+            background: #0f0c29; 
+            background: linear-gradient(to bottom, #24243e, #302b63, #0f0c29);
+            color: #d4af37; /* Gold */
+            font-family: 'Georgia', serif; 
+            display: flex; 
+            flex-direction: column; 
+            height: 95vh; 
+            padding: 20px; 
+        }
+        #output { 
+            flex-grow: 1; 
+            overflow-y: auto; 
+            border: 2px solid #555; 
+            padding: 15px; 
+            margin-bottom: 10px; 
+            background: rgba(0, 0, 0, 0.7);
+            box-shadow: inset 0 0 10px #000;
+            line-height: 1.5;
+        }
+        #input-area { display: flex; align-items: center; }
+        input { 
+            background: #111; 
+            color: #fff; 
+            border: 1px solid #d4af37; 
+            padding: 10px; 
+            flex-grow: 1; 
+            outline: none;
+            font-size: 1.1em;
+        }
+        .sys-msg { color: #aaa; font-style: italic; }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center; margin-top: 0;">CASTLE PERILOUS</h1>
+    <div id="output"></div>
+    <div id="input-area">
+        <span>&gt;&nbsp;</span><input type="text" id="commandInput" autofocus autocomplete="off" placeholder="e.g., 'enter 42' or 'look'">
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const output = document.getElementById('output');
+        const input = document.getElementById('commandInput');
+
+        socket.on('status', function(data) {
+            const entry = document.createElement('div');
+            entry.innerHTML = data.msg;
+            output.appendChild(entry);
+            output.scrollTop = output.scrollHeight;
+        });
+
+        input.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                socket.emit('command', {msg: input.value});
+                input.value = '';
+            }
+        });
+
+        // Listen for the clear signal from the server
+        socket.on('clear_screen', function() {
+            const statusDiv = document.getElementById('status'); // Or whatever your message div ID is
+            statusDiv.innerHTML = '';
+
+            // Optional: Print a small message so they know it worked
+            const welcome = document.createElement('div');
+            welcome.innerHTML = "<i>Terminal cleared.</i><br>";
+            statusDiv.appendChild(welcome);
+        });
+    </script>
+</body>
+</html>
